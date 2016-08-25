@@ -252,6 +252,12 @@ us, for example, reuse a data structure from LLDB within LLVM by moving it to
 libSupport.  It would also let us extract some pieces of libSupport and ADT to a
 new top-level, independent library that could be reused by e.g. libcxxabi.
 
+Indeed, many developers think that the division between e.g. clang and
+clang-tools-extra is not useful.  With the monorepo, this becomes a non-issue
+-- we can move code around as we wish.  With the multirepo, moving
+clang-tools-extra into clang would be much more complicated, and might end up
+loosing history.
+
 Finally, the monorepo would make it easier for developers to update all
 subprojects when changing an API or refactoring code (e.g. `git grep` would work
 across all subprojects).
