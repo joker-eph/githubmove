@@ -74,10 +74,10 @@ contributions, reducing the cost of first contribution and fostering
 collaboration.
 
 ..
-  "'multiple' LLVM developers" should be strengthened.  Do we have any evidence
-  for 'most'?  Rewritten using what data we do have, but as-is is not as strong
-  as can be, I think.  I don't know if this is important -- depends on how much
-  resistance there is to git vs svn.
+  TODO: "'multiple' LLVM developers" should be strengthened.  Do we have any
+  evidence for 'most'?  Rewritten using what data we do have, but as-is is not
+  as strong as can be, I think.  I don't know if this is important -- depends
+  on how much resistance there is to git vs svn.
 
 Git is also the version control many (most?) LLVM developers use. Despite the
 sources being stored in a SVN server, these developers are already using git
