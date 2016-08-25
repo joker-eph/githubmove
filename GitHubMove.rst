@@ -315,14 +315,14 @@ Except the URL, nothing changes. The possibilities today are::
   # or with git
   git clone http://llvm.org/git/llvm.git
 
-With GitHub you would do either::
+After the move to GitHub, you would do either::
 
   git clone https://github.com/llvm-project/llvm.git
   # or using the GitHub svn native bridge
   svn co https://github.com/llvm-project/llvm/trunk
 
-This is valid for both proposal, as we'll maintain a read-only view of the
-individual subprojects repos.
+The above works for both the monorepo and the multirepo, as we'll maintain the
+existing read-only views of the individual subprojects.
 
 Checkout/Clone a Single Project, with Commit Access
 ---------------------------------------------------
@@ -340,58 +340,74 @@ Currently
   git config svn-remote.svn.fetch :refs/remotes/origin/master
   git svn rebase -l  # -l avoids fetching ahead of the git mirror.
 
-Commits are performed using "svn commit" or "git commit" and "git svn dcommit".
+Commits are performed using `svn commit` or `git commit` and `git svn dcommit`.
 
-Split Repositories (Submodules) Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Multirepo Proposal
+^^^^^^^^^^^^^^^^^^
 
-With the first proposal, nothing changes but the URL, and commits can be
-performed using "svn commit" or "git commit" and "git push"::
+With the multirepo proposal, nothing changes but the URL, and commits can be
+performed using `svn commit` or `git commit` and `git push`::
 
   git clone https://github.com/llvm/llvm.git llvm
   # or using the GitHub svn native bridge
   svn co https://github.com/llvm/llvm/trunk/ llvm
 
-Single Repository Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Monorepo Proposal
+^^^^^^^^^^^^^^^^^
 
-With the second proposal, there are multiple possibilities to achieve this.
-First it is possible to clone the full repository::
+With the monorepo, there are multiple possibilities to achieve this.  First,
+you could just clone the full repository::
 
   git clone https://github.com/llvm/llvm-projects.git llvm
   # or using the GitHub svn native bridge
   svn co https://github.com/llvm/llvm-projects/trunk/ llvm
 
-At this point you have every sub-projects (llvm, clang, lld, lldb, ...), which
-**doesn't imply you have to build all of them**. You can still build **only**
-compiler-rt for instance. It is **not** different from someone who would
-checkout all the projects with SVN today. You can commit regularly in a single
-subproject using "git commit" and "git push" or "svn commit", and read the
-history for a single project (*git log libcxx* for example).
+At this point you have every sub-project (llvm, clang, lld, lldb, ...), which
+**doesn't imply you have to build all of them**. You can still build only
+compiler-rt for instance. In this way it's not different from someone who would
+check out all the projects with SVN today.
 
-If you really don't want to have the sources for all the sub-projects checked
-out for any reason, there are again a few options.
-First using git sparse checkout::
+You can commit as normal using `git commit` and `git push` or `svn commit`, and
+read the history for a single project (`git log libcxx` for example).
 
-  mkdir llvm
-  cd llvm
-  git init
-  git remote add origin https://github.com/joker-eph/llvm-unified/
+If you don't want to have the sources for all the sub-projects checked out for,
+there are again a few options.
+
+First, you could hide the other directories using a git sparse checkout::
+
   git config core.sparseCheckout true
-  mkdir .git/info
-  echo /compiler-rt >> .git/info/sparse-checkout
-  git pull origin master
+  echo /compiler-rt > .git/info/sparse-checkout
+  git read-tree -mu HEAD
 
-This actually fetch the data, and checkout **only** the compiler-rt sources.
+The data for all subprojects is still in your `.git` directory, but in your
+checkout, you only see `libcxx`.  Git compresses its history very well, so a
+clone of everything is only about 2x as much data as a clone of llvm only (and
+in any case this is dwarfed by the size of e.g. an llvm objdir).
 
-Secondly, using GitHub svn native bridge::
+Before you push, you'll need to fetch and rebase as normal.  However when you
+fetch you'll likely pull in changes to subprojects you don't care about.  You
+may need to rebuild and retest, but only if the fetch included changes to a
+subproject that your change depends on.  You can check this by running::
+
+  git log origin/master@{1}..origin/master libcxx
+
+..
+  TODO: Do we need the second "origin/master" above?  Would be cool if the
+  command was even shorter.
+
+This shows you all of the changes to `libcxx` since you last fetched.  (This is
+an extra step that you don't need in the multirepo, but for those of us who
+work on a subproject that depends on llvm, it has the advantage that we can
+check whether we pulled in any changes to say clang *or* llvm.)
+
+A second option is to use svn via the GitHub svn native bridge::
 
   svn co https://github.com/llvm/llvm-projects/trunk/compiler-rt compiler-rt  —username=...
 
 This checks out only compiler-rt and provides commit access using "svn commit",
-in the **exact** same way as it would do today.
+in the same way as it would do today.
 
-Finally using *git-svn* from one of the read-only git repo::
+Finally, you could use *git-svn* and one of the subproject mirrors::
 
   # Clone from the single read-only git repo
   git clone http://llvm.org/git/llvm.git
@@ -401,8 +417,8 @@ Finally using *git-svn* from one of the read-only git repo::
   git config svn-remote.svn.fetch :refs/remotes/origin/master
   git svn rebase -l
 
-In this case the repository contains only a single subproject and commits can be
-made using "git svn dcommit", again **just as we do today**.
+In this case the repository contains only a single subproject, and commits can
+be made using `git svn dcommit`, again **exactly as we do today**.
 
 Checkout/Clone Multiple Projects, with Commit Access
 ----------------------------------------------------
@@ -444,10 +460,10 @@ Or using git-svn::
 
 Note that the list would be longer with more subprojects.
 
-Split Repositories (Submodules) Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Multirepo Proposal
+^^^^^^^^^^^^^^^^^^
 
-With the submodule proposal, the umbrella repository enters the dance. This is
+With the multirepo proposal, the umbrella repository enters the dance. This is
 where the mapping from a single revision number to the individual repositories
 revisions is stored.::
 
@@ -457,13 +473,13 @@ revisions is stored.::
   git submodule init
   git submodule update clang llvm libcxx
 
-At this point the clang, llvm, and libcxx individual repositories are cloned and
-stored alongside each other. Some CMake options can cope with this, otherwise
-creating symlinks to fit the magic discovery of projects by CMake can work as
-well.
+At this point the clang, llvm, and libcxx individual repositories are cloned
+and stored alongside each other. There exist flags you can use to inform CMake
+of your directory structure, and alternatively you can just symlink `clang` to
+`llvm/tools/clang`, etc.
 
-Single Repository Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Monorepo Proposal
+^^^^^^^^^^^^^^^^^
 
 The repository contains natively the source for every sub-projects at the right
 revision, which makes this straightforward::
@@ -472,21 +488,20 @@ revision, which makes this straightforward::
   cd llvm
   git checkout $REVISION
 
-As previous, at this point clang, llvm, and libcxx are stored in directories
-alongside each other. Some CMake options can deal with this, otherwise
-creating symlinks to fit the magic discovery of projects by CMake can work as
-well.
+As before, at this point clang, llvm, and libcxx are stored in directories
+alongside each other.
 
 Commit an API Change in LLVM and Update the Sub-projects
 --------------------------------------------------------
 
-While it is technically possible today, it is complicated enough that most
-people are not trying to update LLD or Clang in the same commit as the API is
-changed in LLVM for example.
+Today this is easy for subversion users, and possible but very complicated for
+git-svn users.  Most git users don't try to e.g. update LLD or Clang in the
+same commit as they change an LLVM API.
 
-The split repositories (submodules) proposal does not address this: one would
-have to commit and push separately in every individual repository. The umbrella
-repository may or may not group these individual commits in the same revision.
+The multirepo proposal does not address this: one would have to commit and push
+separately in every individual repository. It might be possible to establish a
+protocol whereby users add a special token to their commit messages that causes
+the umbrella repo's updater bot to group all of them into a single revision.
 
 The single repository proposal handles this natively and makes this use case
 trivial.
@@ -499,27 +514,9 @@ Currently
 
 SVN does not allow this use case, but developers that are currently using
 git-svn can do it. Let's look in practice what it means when dealing with
-multiple sub-projects. First the same initial checkout as before::
+multiple sub-projects.
 
-  git clone http://llvm.org/git/llvm.git
-  cd llvm/
-  git svn init https://llvm.org/svn/llvm-project/llvm/trunk --username=<username>
-  git config svn-remote.svn.fetch :refs/remotes/origin/master
-  git svn rebase -l
-  cd tools
-  git clone http://llvm.org/git/clang.git
-  cd clang/
-  git svn init https://llvm.org/svn/llvm-project/clang/trunk --username=<username>
-  git config svn-remote.svn.fetch :refs/remotes/origin/master
-  git svn rebase -l
-  cd ../../projects/
-  git clone http://llvm.org/git/libcxx.git
-  cd libcxx
-  git svn init https://llvm.org/svn/llvm-project/libcxx/trunk --username=<username>
-  git config svn-remote.svn.fetch :refs/remotes/origin/master
-  git svn rebase -l
-
-To refresh the repository with ToT::
+To update the repository to tip of trunk::
 
   git pull
   cd tools/clang
@@ -543,20 +540,19 @@ To switch branches::
   cd ../../projects/libcxx
   git checkout -b AnotherBranch
 
-Split Repositories (Submodules) Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Multirepo Proposal
+^^^^^^^^^^^^^^^^^^
 
-The split repository is on the same level as the existing read-only git
-views of the SVN repository: every commands needs to be applied to the
-individual repositories.
+The multirepo works the same as the current git workflow: every command needs
+to be applied to each of the individual repositories.
 
-Single Repository Proposal
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Monorepo Proposal
+^^^^^^^^^^^^^^^^^
 
-All these manipulations are naturally handled by the straightforward version
-of the git sub-commands:
+Regular git commands are sufficient, because everything is in a single
+repository:
 
-To refresh the repository with Tot::
+To update the repository to tip of trunk::
 
   git pull
 
@@ -576,32 +572,61 @@ FIXME: TODO.
 Living Downstream
 -----------------
 
-For integrators and downstream projects, multiple solutions are possible to
-continue integrating:
+Under either the multirepo or the monorepo, downstream projects can continue
+working pretty much the same as they currently do, under either the monorepo or
+multirepo proposal.
 
-1. Pull from SVN. If you were pulling from the SVN repo yesterday, you can
-   continue to use SVN. However, the revision numbers **will** change and this
-   may break your integration.
-2. Pull from individual git repositories for each projects. If you were pulling
-   you integration from one of the existing repo, this should still be possible
-   in the future as a read-only view of the individual projects will be
-   maintained.
-3. Migrate to a unified repository (proposal two). It has been shown as an
-   experiment using the "Cherry" project how it can be performed, both by
-   rewriting the git history of the project [LebarCherry]_ or preserving
-   it [AminiCherry]_.
+* If you were pulling from the SVN repo before the switch to git, you can
+  continue to use SVN. The main caveat is that you'll need to be prepared for a
+  one-time change to the revision numbers.
 
-FIXME: more details? For example how to upstream internal patches?
+* If you were pulling from one of the existing git repos, this also will
+  continue to work as before.
 
-Variant
-=======
+Under the monorepo proposal, you have a third option: migrating your fork to
+the monorepo.  This can be particularly beneficial if your fork touches
+multiple subprojects (e.g. llvm and clang), because now you can commingle
+commits to llvm and clang in a single repository.
 
-A variant is to group together in a single repository only the projects that are
-*rev-locked* to LLVM (clang, lld, lldb, ...) and leave projects like libcxx and
-compiler-rt in their own individual and separate repository.
+As a demonstration, we've migrated the "Cherry" fork to the monorepo in two ways:
 
-It is not clear if we would still really need an umbrella repository in this
-configuration.
+* Using a script that rewrites history (including merges) so that it looks like
+  the fork always lived in the monorepo [LebarCherry]_.  The upside of this is
+  when you check out an old revision, you get a copy of all llvm subprojects at
+  a consistent revision.  (For instance, if it's a clang fork, when you check
+  out an old revision you'll get a consistent version of llvm proper.)  The
+  downside is that this changes the fork's commit hashes.
+
+* Merging the fork into the monorepo [AminiCherry]_.  This preserves the fork's
+  commit hashes, but when you check out an old commit you only get the one
+  subproject.
+
+..
+  FIXME: more details? For example how to upstream internal patches?
+
+Monorepo Variant
+================
+
+A variant of the monorepo proposal is to group together in a single repository
+only the projects that are *rev-locked* to LLVM (clang, lld, lldb, ...) and
+leave projects like libcxx and compiler-rt in their own individual and separate
+repository.
+
+In this configuration, the monorep might include libcxx, compiler-rt, etc., as
+submodules, or it might not.
+
+The authors of this proposal think that this variant is less useful than a
+monorepo that contains everything:
+
+* The cost to users of the monorepo of its containing libcxx, compiler-rt, etc.
+  is very small (they're tiny projects compared to llvm proper), and many users of
+  the monorepo would benefit from having all of the pieces needed for a full
+  toolchain present in one repository.
+
+* Developers who hack only on one of these subprojects can continue to use the
+  single subproject git mirrors, so their workflow is unchanged.  (That is,
+  they aren't forced to download or check out all of llvm, clang, etc. just to
+  make a change to libcxx.)
 
 Previews
 ========
@@ -624,14 +649,14 @@ increasing integer across branch [MatthewsRevNum]_.
 Straw man Migration Plan
 ========================
 
-STEP #1 : Pre Move
+STEP #1 : Before The Move
 
 1. Update docs to mention the move, so people are aware of what is going on.
-2. Setup a read-only version of GitHub project, mirroring our current SVN
+2. Set up a read-only version of the GitHub project, mirroring our current SVN
    repository.
-3. Add the required bots to implement the commit emails, as well as the umbrella
-   repository update (if proposal 1 is selected) or the read-only git views for
-   the sub-projects (if proposal 2 is selected).
+3. Add the required bots to implement the commit emails, as well as the
+   umbrella repository update (if the multirepo is selected) or the read-only
+   git views for the sub-projects (if the monorepo is selected).
 
 STEP #2 : Git Move
 
@@ -651,16 +676,16 @@ Once all dependencies are cleared, and all problems have been solved:
 
 STEP #3: Write Access Move
 
-8. Collect peoples GitHub account information, adding them to the project.
-9. Switch SVN repository to read-only and allow pushes to the GitHub repository.
+8. Collect developers' GitHub account information, and add them to the project.
+9. Switch the SVN repository to read-only and allow pushes to the GitHub repository.
 10. Update the documentation
 11. Mirror Git to SVN.
 
 STEP #4 : Post Move
 
 10. Archive the SVN repository.
-11. Review website links pointing to viewvc/klaus/phab etc. to point to GitHub
-    instead.
+11. Update links on the LLVM website pointing to viewvc/klaus/phab etc. to
+    point to GitHub instead.
 
 .. [LattnerRevNum] Chris Lattner, http://lists.llvm.org/pipermail/llvm-dev/2011-July/041739.html
 .. [TrickRevNum] Andrew Trick, http://lists.llvm.org/pipermail/llvm-dev/2011-July/041721.html
