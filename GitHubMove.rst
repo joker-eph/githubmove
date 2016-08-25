@@ -5,16 +5,24 @@ Moving LLVM Projects to GitHub
 Introduction
 ============
 
+..
+  TODO: Should be consistent wrt "sub-project" or "subproject".
+
+..
+  TODO: Should be consistent wrt capitlization of "git".  git's official
+  documentation uses upper-case 'G', but most other people I've seen use
+  lower-case.
+
 This is a proposal to move our current revision control system from our own
 hosted Subversion to GitHub. Below are the financial and technical arguments as
 to why we need such a move and how will people (and validation infrastructure)
 continue to work with a Git-based LLVM.
 
-There will be a survey pointing at this document when we'll know the community's
-reaction and, if we collectively decide to move, the time-frame. Be sure to
-make your view count.
+There will be a survey pointing at this document which we'll use to gague the
+community's reaction and, if we collectively decide to move, the time-frame. Be
+sure to make your view count.
 
-Essentially, the proposal is divided in the following parts:
+This proposal is divided into the following parts:
 
 * Outline of the reasons to move to Git and GitHub
 * Description on the options
@@ -24,17 +32,17 @@ Essentially, the proposal is divided in the following parts:
 What This Proposal is *Not* About
 =================================
 
-The development of LLVM will continue as it exists now, with the same policy.
+The development of LLVM will continue as it exists now, with the same policies.
 
-This proposal aims at focusing on moving the hosting of the repository from SVN
-to git. To this end, this document focuses on this single goal and specifically
-excludes any workflow change. I.e. it should not be assumed that moving to
-GitHub implies using the GitHub issue tracking, or using the GitHub UI for
+This proposal relates only to moving the hosting of our source-code repository
+from SVN hosted on our own servers to git hosted on GitHub. We are not proposing
+other workflow changes here.  That is, it should not be assumed that moving to
+GitHub implies using GitHub's issue tracking, or using the GitHub UI for
 pull-requests and/or code-review.
 
 Every existing contributors will get commit access on demand. Those who don't
 have an existing GitHub account will have to create one in order to continue
-having commit access to any sub-projects.
+having commit access.
 
 Why Git, and Why GitHub?
 ========================
@@ -47,7 +55,7 @@ place, is that we currently host our own Subversion server and Git mirror in a
 voluntary basis. The LLVM Foundation sponsors the server and provides limited
 support, but there is only so much it can do.
 
-Volunteers are not Sysadmins themselves, but compiler engineers that happen
+Volunteers are not sysadmins themselves, but compiler engineers that happen
 to know a thing or two about hosting servers. We also don't have 24/7 support,
 and we sometimes wake up to see that continuous integration is broken because
 the SVN server is either down or unresponsive.
@@ -65,51 +73,65 @@ or anything else. Websites like GitHub have changed the landscape of open source
 contributions, reducing the cost of first contribution and fostering
 collaboration.
 
-Git is also the version control multiple LLVM developers use. Despite the
-sources being stored in a SVN server, some LLVM developers are already using git
+..
+  "'multiple' LLVM developers" should be strengthened.  Do we have any evidence
+  for 'most'?  Rewritten using what data we do have, but as-is is not as strong
+  as can be, I think.  I don't know if this is important -- depends on how much
+  resistance there is to git vs svn.
+
+Git is also the version control many (most?) LLVM developers use. Despite the
+sources being stored in a SVN server, these developers are already using git
 through the Git-SVN integration.
 
-Git features allow you to:
+Git allows you to:
 
-* Commit, squash, merge, fork locally without any penalty to the server
-* Add as many branches as necessary to allow for multiple threads of development
-* Inspect the repository history (blame, log, bisect) without Internet access
+* Commit, squash, merge, and fork locally without touching the remote server.
+* Maintain as many local branches as you like, letting you maintain multiple
+  threads of development.
+* Collaborate on these branches (e.g. through your own fork of llvm on github).
+* Inspect the repository history (blame, log, bisect) without Internet access.
 
-In addition, because Git seems to be replacing every project's version control
-system and because it's flexibility, there are more tools that are built over
-Git. Future tooling is much more likely to support Git first (if not only), than any
-other version control system.
+In addition, because Git seems to be replacing most OSS projects' version
+control systems, there are many tools that are built over Git. Future tooling is
+much more likely to support Git first (if not only).
 
 Why GitHub?
 -----------
 
-GitHub, like GitLab and BitBucket, provide free code hosting for open source
-projects. Any of these can replace the infrastructure that we have today that
-serves code repository and user control access.
+..
+  Note: Since LLVM is primarily an American project, we should probably use the
+  American convention of referring to corporations as singular ("GitHub
+  provides," rather than "GitHub provide").
 
-They also have a dedicated team to monitor, migrate, improve and distribute the
-contents of the repositories depending on region and load.
+GitHub, like GitLab and BitBucket, provides free code hosting for open source
+projects. Any of these could replace the code-hosting infrastructure that we
+have today.
 
-GitHub offers read-write **SVN** access to the repository
+These services also have a dedicated team to monitor, migrate, improve and
+distribute the contents of the repositories depending on region and load.
+
+All things being equal, GitHub has one important advantage over GitLab and
+BitBucket: It offers read-write **SVN** access to the repository
 (https://github.com/blog/626-announcing-svn-support).
-This would enable people that still have/want to use SVN infrastructure and
-tooling to slowly migrate or even stay working as if it was an SVN repository.
+This would enable people to continue working post-migration as though our code
+were still canonically in an SVN repository.
 
-So, any of the three solutions solve the cost and maintenance problem, but
-GitHub has an additional feature that would be beneficial to the migration
-plan. Moreover, there are already multiple LLVM mirrors on GitHub which seems to
-indicate that part of the community already settled there.
+In addition, there are already multiple LLVM mirrors on GitHub, indicating that
+part of our community has already settled there.
 
 On Managing Revision Numbers with Git
-=====================================
+-------------------------------------
 
-The current SVN repository hosts all the LLVM sub-projects alongside of each
-other. This unified SVN repository provides a single monotonically increasing
-integer revision number that is synchronized for every sub-projects: revision
-r279422 allows to checkout LLVM and all the sub-projects in sync.
+The current SVN repository hosts all the LLVM sub-projects alongside each other.
+A single revision number (e.g. r123456) thus identifies a consistent version of
+all LLVM subprojects.
 
-This property has been considered useful in past discussions in the community
-about git, for example:
+Git does not use sequential integer revision number but instead uses a hash to
+identify each commit. (Linus mentioned that the lack of such revision number
+is "the only real design mistake" in git [TorvaldRevNum]_.)
+
+The loss of a sequential integer revision number has been a sticking point in
+past discussions about git:
 
 - "The 'branch' I most care about is mainline, and losing the ability to say
   'fixed in r1234' (with some sort of monotonically increasing number) would
@@ -122,119 +144,162 @@ about git, for example:
   non-trivial issue." [JSonnRevNum]_
 - "Sequential IDs are important for LNT and llvmlab bisection tool." [MatthewsRevNum]_.
 
-Git does not use sequential integer revision number but instead uses a hash to
-identify each commit (Linus mentioned that the lack of such revision number
-is "the only real design mistake" in git [TorvaldRevNum]_.
+However, git can emulate this increasing revision number: `git rev-list  --count
+<commit-hash>`. This identifier is unique only within a single branch, but this
+means the tuple `(num, branch-name)` uniquely identifies a commit.
 
-However, git can emulate this increasing revision number:
-`git rev-list  --count <commit-hash>`. The main caveat is that this does
-work only inside a single branch (like our current trunk) and only inside a
-single repository. However, having a revision number that increases across
-branches has never been mentioned as something desirable, or enabling anything
-interesting.
+We can thus use this revision number to ensure that e.g. `clang -v` reports a
+user-friendly revision number (e.g. `master-12345` or `4.0-5321`). This should
+be enough to address the objections raised above with respect to this aspect of
+git.
 
-As a conclusion, we'll make sure `clang -v` reports a `useful` revision number
-(e.g. `master-12345` or `4.0-5321`). This solution should be enough to address
-the objections raised above on this aspect.
+What About Branches and Merges?
+-------------------------------
 
-One or Multiple Repositories
-============================
+In contrast to SVN, Git makes branching easy. Git's commit history is represented
+as a DAG, a departure from SVN's linear history.
 
-Two major proposals are considered:
+However, we propose to *enforce linear history* in our canonical git repository
+repository.  (This is not uncommon amongst many large users of git.)
 
-1. Moving every single SVN sub-projects into its own separate git repository.
-2. Moving *all* the LLVM projects into a single repository.
+..
+  TODO: Is this going to work when people push via the SVN bridge?
+
+We'll do this with a combination of client-side and server-side hooks. GitHub
+offers a feature called `Status Checks`: a branch protected by `status checks`
+requires commits to be whitelisted before the push can happen.  A supplied
+pre-push hook on the client side will run and check the history, before
+whitelisting the commit being pushed [statuschecks]_.
+
+What About Commit Emails?
+-------------------------
+
+An extra bot will need to be set up to continue to send emails for every commit.
+We'll keep the exact same email format as we currently have (a change is possible
+later, but beyond the scope of the current discussion), the only difference
+being changing the URL from `http://llvm.org/viewvc/...` to
+`http://github.org/llvm/...`.
+
+
+One or Multiple Repositories?
+=============================
+
+There are two major proposals for how to structure our git repository: The
+"multirepo" and the "monorepo".
+
+1. *Multirepo* - Moving each SVN sub-project into its own separate git repository.
+2. *Monorepo* - Moving all the LLVM sub-projects into a single git repository.
 
 The first proposal would mimic the existing official separate read-only git
-repositories (i.e. for example http://llvm.org/git/compiler-rt.git), while the
-second one would mimic an export of the SVN repository
-(i.e. would look like https://github.com/llvm-project/llvm-project) where every
-sub-projects is alongside each other.
-In the latter case, the existing read-only repositories (i.e. for example
-http://llvm.org/git/compiler-rt.git) with git-svn read-write access would be
-maintained
+repositories (e.g. http://llvm.org/git/compiler-rt.git), while the second one
+would mimic an export of the SVN repository (i.e. it would look similar to
+https://github.com/llvm-project/llvm-project, where each sub-project has its own
+top-level directory).
 
-There are other impacts that are less immediates and less technicals: the first
-proposal of keeping the repository separate implies a view where the
-sub-projects are very independent and isolated, while the second proposal
-encourage better code sharing and refactoring across projects, for example
-reusing a datastructure initially in LLDB by moving it into libSupport. It
-would also be very easy to decide to extract some pieces of libSupport and/or
-ADT to a new top-level *independent* library that can be reused in libcxxabi for
-instance. Finally, it also encourages to update all the subprojects when
-changing API or refactoring code ("git grep" works across sub-projects for
-instance).
+Why monorepo?
+-------------
 
-Some concerns have been raised that having a single repository would be a burden
-for downstream users that have interest in only a single repository, however
-this is addressed by keeping a read-only git repo for each project just as we
-do today. Also the GitHub SVN bridge allows to contribute to a single
-sub-project the same way it is possible today.
+Full disclosure, the authors of this document are in favor of the monorepo.  :)
 
-How Do We Handle A Single Revision Number Across Multiple Repositories
-----------------------------------------------------------------------
+First, the monorepo is carefully designed to minimize workflow disruptions to
+those who don't want to make a change.
 
-A key need is to be able to checkout multiple projects (i.e. lldb+llvm or
-clang+llvm+libcxx for example) at a given revision.
+Under the monorepo approach, we would continue to maintain the existing
+read-only git mirrors for each subproject (e.g.
+http://llvm.org/git/compiler-rt.git).  Users will be able to push from these
+into the monorepo using git-svn (the push target would be GitHub's svn endpoint
+for the monorepo), so developers who want to continue using the existing git
+mirrors as they do today would have minimal workflow disruption.  It's just a
+matter of updating your git-svn configs.
+n
+Similarly, users who are interested in only one or a few subprojects could
+continue to work with the individual single-subproject mirrors as they do today,
+rather than being forced to download history for all LLVM subprojects.
 
-The second proposal keeps naturally the property of the existing SVN repository:
-the sub-projects move synchronously and a single revision number identifies the
-state of the development across all projects.
+Those who wish to use SVN could also use the monorepo via GitHub's git-to-svn
+bridge.  Revision numbers and maybe the directory structure would change, but
+beyond that it would continue to work as normal.  In contrast, SVN users would
+be more disrupted in the multirepo approach.  They could have a separate SVN
+repository for each sub-project, but under this proposal we currently have no
+way to let them synchronize their separate repositories to a consistent state
+like `svn checkout r123456` currently does.
 
-The first proposal, with separate is more involved and requires tooling to
-achieve this. We describe here the proposed solution.
+Of course nobody will be forced to compile projects they don't want to build.
+The exact structure is TBD, but even if you use the monorepo directly, we'll
+ensure that it's easy to set up your build to compile only a few particular
+subprojects.
+
+But none of this answers the question of, what are the *advantages* of the
+monorepo?
+
+For one thing, many of us would prefer the workflow the monorepo affords.
+There's lots more on that below, but at a high level, many operations that
+affect multiple subprojects are complex or impossible in the multirepo, but they
+become dead-simple in the monorepo.  For example, in the multirepo, you can't
+atomically commit across multiple subprojects in the multirepo, and maintaining
+a proper branch with interleaved commits, some in one subproject and some in
+another, requires lots of git submodule hackery.  In contrast, these are just
+"git commit" and regular git branch operations in the monorepo; no magic
+required.
+
+Even the common operation of checking out compatible versions of LLVM and (say)
+clang is far simpler in the monorepo.  More on this below, too.
+
+But the monorepo has less immediate/technical advantages over the multirepo as
+well.  Because all of our subprojects would live in a single repository, we
+could move code between them easily and without losing history.  This would let
+us, for example, reuse a data structure from LLDB within LLVM by moving it to
+libSupport.  It would also let us extract some pieces of libSupport and ADT to a
+new top-level, independent library that could be reused by e.g. libcxxabi.
+
+Finally, the monorepo would make it easier for developers to update all
+subprojects when changing an API or refactoring code (e.g. `git grep` would work
+across all subprojects).
+
+How Do We Handle A Single Revision Number Across Multiple Repositories?
+-----------------------------------------------------------------------
+
+A key need is to be able to check out multiple projects (i.e. lldb+llvm or
+clang+llvm+libcxx for example) at a specific revision.
+
+Under the monorepo, this is a non-issue.  That proposal maintains property of
+the existing SVN repository that the sub-projects move synchronously, and a
+single revision number (or commit hash) identifies the state of the development
+across all projects.
+
+Under the multirepo, things are more involved.  We describe here the proposed
+solution.
 
 Fundamentally, separated git repositories imply that a tuple of revisions
 (one entry per repository) is needed to describe the state across
 repositories/sub-projects.
 For example, a given version of clang would be
 *<LLVM-12345, clang-5432, libcxx-123, etc.>*.
+
 To make this more convenient, a separate *umbrella* repository would be
 provided. This repository would be used for the sole purpose of understanding
-the *sequence* (with some granularity) in which commits were added across
-repository and provide a single revision number.
+the sequence (with some granularity) in which commits were added across
+repository and to provide a single revision number.
 
-This *umbrella* repository will be read-only and periodically updated
+This umbrella repository will be read-only and periodically updated
 to record the above tuple. The proposed form to record this is to use git
 [submodules]_, possibly along with a set of scripts to help check out a
-specific revision of the LLVM distribution. A regular LLVM developer does not
-need to interact with the *umbrella* repository, the individual repositories
-can be checked out independently.
+specific revision of the LLVM distribution.
+
+A regular LLVM developer does not need to interact with the umbrella repository
+-- the individual repositories can be checked out independently -- but you would
+need to use the umbrella repository to bisect or to check out old revisions of
+llvm plus another subproject at a consistent version.
 
 One example of such a repository is Takumi's llvm-project-submodule
-(https://github.com/chapuni/llvm-project-submodule), which when checked out,
-will have the references to all sub-modules but not check them out, so one will
-need to *init* the sub-modules manually. This will allow the same behavior
-as checking out individual SVN repositories, as it will keep the
-cross-repository history.
+(https://github.com/chapuni/llvm-project-submodule).  You can use `git submodule
+init` to check out only the subprojects you're interested in, and other
+submodule commands to e.g. update all submodules to an older revision.
 
 This umbrella repository will be updated automatically by a bot (running on
 notice from a webhook on every push, and periodically). Note that commits in
 different repositories pushed within the same time frame may be visible together
 or in undefined order in the umbrella repository.
-
-What About Branches and Merges?
-===============================
-
-Contrary to SVN, git makes it easy and encourages branches. The commits history
-is represented as a DAG, which is a departure from SVN linear history. As part
-of the current plan, we'll *enforce linear history* in the repository (this
-applies for both proposal).
-
-The implementation will rely on a combination of client-side and server-side
-hooks. GitHub offers a feature called `Status Checks`: a branch protected by
-`status checks` requires commits to be *white-listed* before the push can happen.
-A supplied pre-push hook on the client side will run and check the history,
-before white-listing the commit being pushed [statuschecks]_.
-
-What About Commits Emails / Mailing-list?
-=========================================
-
-An extra bot will need to be setup to continue to send emails for every commit.
-We'll keep the exact same email format as the existing (a change is possible
-later, but beyond the scope of the current discussion), the only difference
-being replacing the URL from "http://llvm.org/viewvc/..." to
-"http://github.org/llvm...".
 
 Workflow Before/After
 =====================
