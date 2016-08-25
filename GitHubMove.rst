@@ -144,9 +144,10 @@ past discussions about git:
   non-trivial issue." [JSonnRevNum]_
 - "Sequential IDs are important for LNT and llvmlab bisection tool." [MatthewsRevNum]_.
 
-However, git can emulate this increasing revision number: `git rev-list  --count
-<commit-hash>`. This identifier is unique only within a single branch, but this
-means the tuple `(num, branch-name)` uniquely identifies a commit.
+However, git can emulate this increasing revision number:
+`git rev-list  --count <commit-hash>`. This identifier is unique only within a
+single branch, but this means the tuple `(num, branch-name)` uniquely identifies
+a commit.
 
 We can thus use this revision number to ensure that e.g. `clang -v` reports a
 user-friendly revision number (e.g. `master-12345` or `4.0-5321`). This should
@@ -196,71 +197,37 @@ would mimic an export of the SVN repository (i.e. it would look similar to
 https://github.com/llvm-project/llvm-project, where each sub-project has its own
 top-level directory).
 
-Why monorepo?
--------------
+With the Monorepo, the existing read-only repositories (i.e. for example
+http://llvm.org/git/compiler-rt.git) with git-svn read-write access would be
+maintained
 
-Full disclosure, the authors of this document are in favor of the monorepo.  :)
+There are other impacts that are less immediates and less technicals: the first
+proposal of keeping the repository separate implies a view where the
+sub-projects are very independent and isolated, while the second proposal
+encourage better code sharing and refactoring across projects, for example
+reusing a datastructure initially in LLDB by moving it into libSupport. It
+would also be very easy to decide to extract some pieces of libSupport and/or
+ADT to a new top-level *independent* library that can be reused in libcxxabi for
+instance. Finally, it also encourages to update all the subprojects when
+changing API or refactoring code ("git grep" works across sub-projects for
+instance).
 
-First, the monorepo is carefully designed to minimize workflow disruptions to
-those who don't want to make a change.
+As another example, aome developers think that the division between e.g. clang 
+and clang-tools-extra is not useful. With the monorepo, we can move code around
+as we wish. With the multirepo, moving clang-tools-extra into clang would be
+much more complicated, and might end up loosing history.
 
-Under the monorepo approach, we would continue to maintain the existing
-read-only git mirrors for each subproject (e.g.
-http://llvm.org/git/compiler-rt.git).  Users will be able to push from these
-into the monorepo using git-svn (the push target would be GitHub's svn endpoint
-for the monorepo), so developers who want to continue using the existing git
-mirrors as they do today would have minimal workflow disruption.  It's just a
-matter of updating your git-svn configs.
-n
-Similarly, users who are interested in only one or a few subprojects could
-continue to work with the individual single-subproject mirrors as they do today,
-rather than being forced to download history for all LLVM subprojects.
+Some concerns have been raised that having a single repository would be a burden
+for downstream users that have interest in only a single repository, however
+this is addressed by keeping a read-only git repo for each project just as we
+do today. Also the GitHub SVN bridge allows to contribute to a single
+sub-project the same way it is possible today (see below before/after section
+for more details).
 
-Those who wish to use SVN could also use the monorepo via GitHub's git-to-svn
-bridge.  Revision numbers and maybe the directory structure would change, but
-beyond that it would continue to work as normal.  In contrast, SVN users would
-be more disrupted in the multirepo approach.  They could have a separate SVN
-repository for each sub-project, but under this proposal we currently have no
-way to let them synchronize their separate repositories to a consistent state
-like `svn checkout r123456` currently does.
-
-Of course nobody will be forced to compile projects they don't want to build.
+Finally, nobody will be forced to compile projects they don't want to build.
 The exact structure is TBD, but even if you use the monorepo directly, we'll
 ensure that it's easy to set up your build to compile only a few particular
 subprojects.
-
-But none of this answers the question of, what are the *advantages* of the
-monorepo?
-
-For one thing, many of us would prefer the workflow the monorepo affords.
-There's lots more on that below, but at a high level, many operations that
-affect multiple subprojects are complex or impossible in the multirepo, but they
-become dead-simple in the monorepo.  For example, in the multirepo, you can't
-atomically commit across multiple subprojects in the multirepo, and maintaining
-a proper branch with interleaved commits, some in one subproject and some in
-another, requires lots of git submodule hackery.  In contrast, these are just
-"git commit" and regular git branch operations in the monorepo; no magic
-required.
-
-Even the common operation of checking out compatible versions of LLVM and (say)
-clang is far simpler in the monorepo.  More on this below, too.
-
-But the monorepo has less immediate/technical advantages over the multirepo as
-well.  Because all of our subprojects would live in a single repository, we
-could move code between them easily and without losing history.  This would let
-us, for example, reuse a data structure from LLDB within LLVM by moving it to
-libSupport.  It would also let us extract some pieces of libSupport and ADT to a
-new top-level, independent library that could be reused by e.g. libcxxabi.
-
-Indeed, many developers think that the division between e.g. clang and
-clang-tools-extra is not useful.  With the monorepo, this becomes a non-issue
--- we can move code around as we wish.  With the multirepo, moving
-clang-tools-extra into clang would be much more complicated, and might end up
-loosing history.
-
-Finally, the monorepo would make it easier for developers to update all
-subprojects when changing an API or refactoring code (e.g. `git grep` would work
-across all subprojects).
 
 How Do We Handle A Single Revision Number Across Multiple Repositories?
 -----------------------------------------------------------------------
@@ -298,9 +265,9 @@ need to use the umbrella repository to bisect or to check out old revisions of
 llvm plus another subproject at a consistent version.
 
 One example of such a repository is Takumi's llvm-project-submodule
-(https://github.com/chapuni/llvm-project-submodule).  You can use `git submodule
-init` to check out only the subprojects you're interested in, and other
-submodule commands to e.g. update all submodules to an older revision.
+(https://github.com/chapuni/llvm-project-submodule).  You can use
+`git submodule init` to check out only the subprojects you're interested in, and
+other submodule commands to e.g. update all submodules to an older revision.
 
 This umbrella repository will be updated automatically by a bot (running on
 notice from a webhook on every push, and periodically). Note that commits in
