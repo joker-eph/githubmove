@@ -212,7 +212,7 @@ instance. Finally, it also encourages to update all the subprojects when
 changing API or refactoring code ("git grep" works across sub-projects for
 instance).
 
-As another example, aome developers think that the division between e.g. clang 
+As another example, some developers think that the division between e.g. clang
 and clang-tools-extra is not useful. With the monorepo, we can move code around
 as we wish. With the multirepo, moving clang-tools-extra into clang would be
 much more complicated, and might end up loosing history.
@@ -300,8 +300,7 @@ existing read-only views of the individual subprojects.
 Checkout/Clone a Single Project, with Commit Access
 ---------------------------------------------------
 
-Currently
-^^^^^^^^^
+**Currently**
 ::
 
   # direct SVN checkout
@@ -315,8 +314,7 @@ Currently
 
 Commits are performed using `svn commit` or `git commit` and `git svn dcommit`.
 
-Multirepo Proposal
-^^^^^^^^^^^^^^^^^^
+**Multirepo Proposal**
 
 With the multirepo proposal, nothing changes but the URL, and commits can be
 performed using `svn commit` or `git commit` and `git push`::
@@ -325,8 +323,7 @@ performed using `svn commit` or `git commit` and `git push`::
   # or using the GitHub svn native bridge
   svn co https://github.com/llvm/llvm/trunk/ llvm
 
-Monorepo Proposal
-^^^^^^^^^^^^^^^^^
+**Monorepo Proposal**
 
 With the monorepo, there are multiple possibilities to achieve this.  First,
 you could just clone the full repository::
@@ -398,8 +395,7 @@ Checkout/Clone Multiple Projects, with Commit Access
 
 Let's look how to assemble llvm+clang+libcxx at a given revision.
 
-Currently
-^^^^^^^^^
+**Currently**
 ::
 
   svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm -r $REVISION
@@ -433,8 +429,7 @@ Or using git-svn::
 
 Note that the list would be longer with more subprojects.
 
-Multirepo Proposal
-^^^^^^^^^^^^^^^^^^
+**Multirepo Proposal**
 
 With the multirepo proposal, the umbrella repository enters the dance. This is
 where the mapping from a single revision number to the individual repositories
@@ -451,8 +446,7 @@ and stored alongside each other. There exist flags you can use to inform CMake
 of your directory structure, and alternatively you can just symlink `clang` to
 `llvm/tools/clang`, etc.
 
-Monorepo Proposal
-^^^^^^^^^^^^^^^^^
+**Monorepo Proposal**
 
 The repository contains natively the source for every sub-projects at the right
 revision, which makes this straightforward::
@@ -482,8 +476,7 @@ trivial.
 Branching/Stashing/Updating for Local Development or Experiments
 ----------------------------------------------------------------
 
-Currently
-^^^^^^^^^
+**Currently**
 
 SVN does not allow this use case, but developers that are currently using
 git-svn can do it. Let's look in practice what it means when dealing with
@@ -513,14 +506,12 @@ To switch branches::
   cd ../../projects/libcxx
   git checkout -b AnotherBranch
 
-Multirepo Proposal
-^^^^^^^^^^^^^^^^^^
+**Multirepo Proposal**
 
 The multirepo works the same as the current git workflow: every command needs
 to be applied to each of the individual repositories.
 
-Monorepo Proposal
-^^^^^^^^^^^^^^^^^
+**Monorepo Proposal**
 
 Regular git commands are sufficient, because everything is in a single
 repository:
