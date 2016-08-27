@@ -530,9 +530,8 @@ the umbrella repository directly. A subtlety is that the bisect script itself
 needs to make sure the submodules are updated accordingly.
 
 For example, to find which commit introduces a regression where clang-3.9
-crashes but not clang-3.8 passes, one should be able to simply do:
+crashes but not clang-3.8 passes, one should be able to simply do::
 
-::
   git bisect start release_39 release_38
   git bisect run ./bisect_script.sh
 
