@@ -338,15 +338,15 @@ in any case this is dwarfed by the size of e.g. a llvm build dir).
 Before you push, you'll need to fetch and rebase as normal.  However when you
 fetch you'll likely pull in changes to sub-projects you don't care about.  You
 may need to rebuild and retest, but only if the fetch included changes to a
-sub-project that your change depends on.  You can check this by running::
+sub-project that your change depends on. You can check this by running::
 
   git log origin/master@{1}..origin/master libcxx
 
-..
-  TODO: Do we need the second "origin/master" above?  Would be cool if the
-  command was even shorter.
-
-This shows you all of the changes to `libcxx` since you last fetched.  (This is
+This shows you all of the changes to `libcxx` since you last fetched. This 
+command can be hidden in a script so that `git llvmpush` would perform all these
+steps, fail only if such a dependent change exists, and show immediately the 
+change that prevented the push. An immediate repeat of the command would 
+(almost) certainly result in a successed push. (This is
 an extra step that you don't need in the multirepo, but for those of us who
 work on a sub-project that depends on llvm, it has the advantage that we can
 check whether we pulled in any changes to say clang *or* llvm.)
