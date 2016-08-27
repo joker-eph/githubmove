@@ -607,7 +607,7 @@ only the projects that are *rev-locked* to LLVM (clang, lld, lldb, ...) and
 leave projects like libcxx and compiler-rt in their own individual and separate
 repository.
 
-In this configuration, the monorep might include libcxx, compiler-rt, etc., as
+In this configuration, the monorepo might include libcxx, compiler-rt, etc., as
 submodules, or it might not.
 
 The authors of this proposal think that this variant is less useful than a
