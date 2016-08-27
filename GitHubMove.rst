@@ -331,9 +331,9 @@ First, you could hide the other directories using a Git sparse checkout::
   git read-tree -mu HEAD
 
 The data for all sub-projects is still in your `.git` directory, but in your
-checkout, you only see `libcxx`.  Git compresses its history very well, so a
-clone of everything is only about 2x as much data as a clone of llvm only (and
-in any case this is dwarfed by the size of e.g. an llvm objdir).
+checkout, you only see `compiler-rt`.  Git compresses its history very well, so
+a clone of everything is only about 2x as much data as a clone of llvm only (and
+in any case this is dwarfed by the size of e.g. a llvm build dir).
 
 Before you push, you'll need to fetch and rebase as normal.  However when you
 fetch you'll likely pull in changes to sub-projects you don't care about.  You
