@@ -607,21 +607,14 @@ only the projects that are *rev-locked* to LLVM (clang, lld, lldb, ...) and
 leave projects like libcxx and compiler-rt in their own individual and separate
 repository.
 
-In this configuration, the monorepo might include libcxx, compiler-rt, etc., as
-submodules, or it might not.
+Note however that many users of the monorepo would benefit from having all of
+the pieces needed for a full toolchain present in one repository. And for
+newcomers, getting and building a toolchain is easier.
 
-The authors of this proposal think that this variant is less useful than a
-monorepo that contains everything:
-
-* The cost to users of the monorepo of its containing libcxx, compiler-rt, etc.
-  is very small (they're tiny projects compared to llvm proper), and many users of
-  the monorepo would benefit from having all of the pieces needed for a full
-  toolchain present in one repository.
-
-* Developers who hack only on one of these sub-projects can continue to use the
-  single sub-project Git mirrors, so their workflow is unchanged.  (That is,
-  they aren't forced to download or check out all of llvm, clang, etc. just to
-  make a change to libcxx.)
+Also, developers who hack only on one of these sub-projects can continue to use
+the single sub-project Git mirrors, so their workflow is unchanged.  (That is,
+they aren't forced to download or check out all of llvm, clang, etc. just to
+make a change to libcxx.)
 
 Previews
 ========
