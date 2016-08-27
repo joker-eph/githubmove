@@ -564,16 +564,18 @@ bisection script does not need to include the `git submodule update` step.
 Living Downstream
 -----------------
 
-Under either the multirepo or the monorepo, downstream projects can continue
-working pretty much the same as they currently do, under either the monorepo or
-multirepo proposal.
+Depending on which of the multirepo or the monorepo proposal gets accepted,
+and depending on the integration scheme, downstream projects may be differently
+impacted and have different options.
 
-* If you were pulling from the SVN repo before the switch to Git, you can
-  continue to use SVN. The main caveat is that you'll need to be prepared for a
-  one-time change to the revision numbers.
+* If you were pulling from the SVN repo before the switch to Git. The monorepo
+  will allow you to continue to use SVN. The main caveat is that you'll need to
+  be prepared for a one-time change to the revision numbers. The multirepo
+  proposal does not provide a great solution for this.
 
-* If you were pulling from one of the existing Git repos, this also will
-  continue to work as before.
+* If you were pulling from one of the existing read-only Git repos, this also
+  will continue to work as before as they will continue to exist in any of the
+  proposal.
 
 Under the monorepo proposal, you have a third option: migrating your fork to
 the monorepo.  This can be particularly beneficial if your fork touches
@@ -593,8 +595,9 @@ As a demonstration, we've migrated the "Cherry" fork to the monorepo in two ways
   commit hashes, but when you check out an old commit you only get the one
   sub-project.
 
-..
-  FIXME: more details? For example how to upstream internal patches?
+If you keep a split-repository solution downstream, upstreaming patches is
+always possible: you can apply the patches in the appropriate subdirectory of
+the monorepo.
 
 Monorepo Variant
 ================
