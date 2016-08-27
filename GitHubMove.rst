@@ -531,7 +531,54 @@ To switch branches::
 Bisecting
 ---------
 
-FIXME: TODO.
+Assuming a developer is looking for a bug in clang (or lld, or lldb, ...).
+
+**Currently**
+
+SVN does not have builtin bisection support. Using the existing git read-only
+view of the repositories, it is possible to use the native git bisection script
+over the llvm repository, and use some scripting to synchronize the clang
+repository to match the llvm revision.
+
+**Multirepo Proposal**
+
+With the multi-repositories proposal, the cross-repository synchronization is
+achieved using the umbrella repository. This repository contains only
+submodules for the other sub-projects. The native Git bisection can be used on
+the umbrella repository directly. A subtlety is that the bisect script itself
+needs to make sure the submodules are updated accordingly.
+
+For example, to find which commit introduces a regression where clang-3.9
+crashes but not clang-3.8 passes, one should be able to simply do:
+
+::
+  git bisect start release_39 release_38
+  git bisect run ./bisect_script.sh
+
+With the `bisect_script.sh` script being::
+
+  #!/bin/sh
+  cd $UMBRELLA_DIRECTORY
+  git submodule update llvm clang libcxx #....
+  cd $BUILD_DIR
+
+  ninja clang || exit 125   # an exit code of 125 asks "git bisect"
+                            # to "skip" the current commit
+
+  ./bin/clang some_crash_test.cpp
+
+When the `git bisect run` command returns, the umbrella repository is set to
+the state where the regression is introduced, one can inspect the history on
+every subprojects compared to the previous revision in the umbrella (it is
+possible that one commit in the umbrella repository includes multiple commits
+in the subprojects).
+
+**Monorepo Proposal**
+
+Bisecting on the monorepo is straightforward and almost identical to the
+multirepo situation explained above. The granularity is finer since each
+individual commits in every subprojects participate in the bisection. The
+bisection script does not need to include the `git submodule update` step.
 
 Living Downstream
 -----------------
