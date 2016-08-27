@@ -5,9 +5,6 @@ Moving LLVM Projects to GitHub
 Introduction
 ============
 
-..
-  TODO: Should be consistent wrt "sub-project" or "subproject".
-
 This is a proposal to move our current revision control system from our own
 hosted Subversion to GitHub. Below are the financial and technical arguments as
 to why we need such a move and how will people (and validation infrastructure)
@@ -119,7 +116,7 @@ On Managing Revision Numbers with Git
 
 The current SVN repository hosts all the LLVM sub-projects alongside each other.
 A single revision number (e.g. r123456) thus identifies a consistent version of
-all LLVM subprojects.
+all LLVM sub-projects.
 
 Git does not use sequential integer revision number but instead uses a hash to
 identify each commit. (Linus mentioned that the lack of such revision number
@@ -203,7 +200,7 @@ encourage better code sharing and refactoring across projects, for example
 reusing a datastructure initially in LLDB by moving it into libSupport. It
 would also be very easy to decide to extract some pieces of libSupport and/or
 ADT to a new top-level *independent* library that can be reused in libcxxabi for
-instance. Finally, it also encourages to update all the subprojects when
+instance. Finally, it also encourages to update all the sub-projects when
 changing API or refactoring code ("git grep" works across sub-projects for
 instance).
 
@@ -222,7 +219,7 @@ for more details).
 Finally, nobody will be forced to compile projects they don't want to build.
 The exact structure is TBD, but even if you use the monorepo directly, we'll
 ensure that it's easy to set up your build to compile only a few particular
-subprojects.
+sub-projects.
 
 How Do We Handle A Single Revision Number Across Multiple Repositories?
 -----------------------------------------------------------------------
@@ -257,11 +254,11 @@ specific revision of the LLVM distribution.
 A regular LLVM developer does not need to interact with the umbrella repository
 -- the individual repositories can be checked out independently -- but you would
 need to use the umbrella repository to bisect or to check out old revisions of
-llvm plus another subproject at a consistent version.
+llvm plus another sub-project at a consistent version.
 
 One example of such a repository is Takumi's llvm-project-submodule
 (https://github.com/chapuni/llvm-project-submodule).  You can use
-`git submodule init` to check out only the subprojects you're interested in, and
+`git submodule init` to check out only the sub-projects you're interested in, and
 other submodule commands to e.g. update all submodules to an older revision.
 
 This umbrella repository will be updated automatically by a bot (running on
@@ -290,7 +287,7 @@ After the move to GitHub, you would do either::
   svn co https://github.com/llvm-project/llvm/trunk
 
 The above works for both the monorepo and the multirepo, as we'll maintain the
-existing read-only views of the individual subprojects.
+existing read-only views of the individual sub-projects.
 
 Checkout/Clone a Single Project, with Commit Access
 ---------------------------------------------------
@@ -344,15 +341,15 @@ First, you could hide the other directories using a Git sparse checkout::
   echo /compiler-rt > .git/info/sparse-checkout
   git read-tree -mu HEAD
 
-The data for all subprojects is still in your `.git` directory, but in your
+The data for all sub-projects is still in your `.git` directory, but in your
 checkout, you only see `libcxx`.  Git compresses its history very well, so a
 clone of everything is only about 2x as much data as a clone of llvm only (and
 in any case this is dwarfed by the size of e.g. an llvm objdir).
 
 Before you push, you'll need to fetch and rebase as normal.  However when you
-fetch you'll likely pull in changes to subprojects you don't care about.  You
+fetch you'll likely pull in changes to sub-projects you don't care about.  You
 may need to rebuild and retest, but only if the fetch included changes to a
-subproject that your change depends on.  You can check this by running::
+sub-project that your change depends on.  You can check this by running::
 
   git log origin/master@{1}..origin/master libcxx
 
@@ -362,7 +359,7 @@ subproject that your change depends on.  You can check this by running::
 
 This shows you all of the changes to `libcxx` since you last fetched.  (This is
 an extra step that you don't need in the multirepo, but for those of us who
-work on a subproject that depends on llvm, it has the advantage that we can
+work on a sub-project that depends on llvm, it has the advantage that we can
 check whether we pulled in any changes to say clang *or* llvm.)
 
 A second option is to use svn via the GitHub svn native bridge::
@@ -372,7 +369,7 @@ A second option is to use svn via the GitHub svn native bridge::
 This checks out only compiler-rt and provides commit access using "svn commit",
 in the same way as it would do today.
 
-Finally, you could use *git-svn* and one of the subproject mirrors::
+Finally, you could use *git-svn* and one of the sub-project mirrors::
 
   # Clone from the single read-only Git repo
   git clone http://llvm.org/git/llvm.git
@@ -382,7 +379,7 @@ Finally, you could use *git-svn* and one of the subproject mirrors::
   git config svn-remote.svn.fetch :refs/remotes/origin/master
   git svn rebase -l
 
-In this case the repository contains only a single subproject, and commits can
+In this case the repository contains only a single sub-project, and commits can
 be made using `git svn dcommit`, again **exactly as we do today**.
 
 Checkout/Clone Multiple Projects, with Commit Access
@@ -422,7 +419,7 @@ Or using git-svn::
   git svn rebase -l
   git checkout `git svn find-rev -B r258109`
 
-Note that the list would be longer with more subprojects.
+Note that the list would be longer with more sub-projects.
 
 **Multirepo Proposal**
 
@@ -564,15 +561,15 @@ With the `bisect_script.sh` script being::
 
 When the `git bisect run` command returns, the umbrella repository is set to
 the state where the regression is introduced, one can inspect the history on
-every subprojects compared to the previous revision in the umbrella (it is
+every sub-projects compared to the previous revision in the umbrella (it is
 possible that one commit in the umbrella repository includes multiple commits
-in the subprojects).
+in the sub-projects).
 
 **Monorepo Proposal**
 
 Bisecting on the monorepo is straightforward and almost identical to the
 multirepo situation explained above. The granularity is finer since each
-individual commits in every subprojects participate in the bisection. The
+individual commits in every sub-projects participate in the bisection. The
 bisection script does not need to include the `git submodule update` step.
 
 Living Downstream
@@ -591,21 +588,21 @@ multirepo proposal.
 
 Under the monorepo proposal, you have a third option: migrating your fork to
 the monorepo.  This can be particularly beneficial if your fork touches
-multiple subprojects (e.g. llvm and clang), because now you can commingle
+multiple sub-projects (e.g. llvm and clang), because now you can commingle
 commits to llvm and clang in a single repository.
 
 As a demonstration, we've migrated the "Cherry" fork to the monorepo in two ways:
 
 * Using a script that rewrites history (including merges) so that it looks like
   the fork always lived in the monorepo [LebarCherry]_.  The upside of this is
-  when you check out an old revision, you get a copy of all llvm subprojects at
+  when you check out an old revision, you get a copy of all llvm sub-projects at
   a consistent revision.  (For instance, if it's a clang fork, when you check
   out an old revision you'll get a consistent version of llvm proper.)  The
   downside is that this changes the fork's commit hashes.
 
 * Merging the fork into the monorepo [AminiCherry]_.  This preserves the fork's
   commit hashes, but when you check out an old commit you only get the one
-  subproject.
+  sub-project.
 
 ..
   FIXME: more details? For example how to upstream internal patches?
@@ -629,8 +626,8 @@ monorepo that contains everything:
   the monorepo would benefit from having all of the pieces needed for a full
   toolchain present in one repository.
 
-* Developers who hack only on one of these subprojects can continue to use the
-  single subproject Git mirrors, so their workflow is unchanged.  (That is,
+* Developers who hack only on one of these sub-projects can continue to use the
+  single sub-project Git mirrors, so their workflow is unchanged.  (That is,
   they aren't forced to download or check out all of llvm, clang, etc. just to
   make a change to libcxx.)
 
