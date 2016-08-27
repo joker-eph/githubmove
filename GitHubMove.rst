@@ -638,7 +638,7 @@ Remaining Issues
 LNT and llvmlab will need to be updated: they rely on unique monotonically
 increasing integer across branch [MatthewsRevNum]_.
 
-Straw man Migration Plan
+Straw Man Migration Plan
 ========================
 
 STEP #1 : Before The Move
