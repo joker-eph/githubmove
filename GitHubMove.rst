@@ -84,11 +84,6 @@ much more likely to support Git first (if not only).
 Why GitHub?
 -----------
 
-..
-  Note: Since LLVM is primarily an American project, we should probably use the
-  American convention of referring to corporations as singular ("GitHub
-  provides," rather than "GitHub provide").
-
 GitHub, like GitLab and BitBucket, provides free code hosting for open source
 projects. Any of these could replace the code-hosting infrastructure that we
 have today.
