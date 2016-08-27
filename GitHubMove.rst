@@ -8,11 +8,6 @@ Introduction
 ..
   TODO: Should be consistent wrt "sub-project" or "subproject".
 
-..
-  TODO: Should be consistent wrt capitlization of "git".  git's official
-  documentation uses upper-case 'G', but most other people I've seen use
-  lower-case.
-
 This is a proposal to move our current revision control system from our own
 hosted Subversion to GitHub. Below are the financial and technical arguments as
 to why we need such a move and how will people (and validation infrastructure)
@@ -35,7 +30,7 @@ What This Proposal is *Not* About
 The development of LLVM will continue as it exists now, with the same policies.
 
 This proposal relates only to moving the hosting of our source-code repository
-from SVN hosted on our own servers to git hosted on GitHub. We are not proposing
+from SVN hosted on our own servers to Git hosted on GitHub. We are not proposing
 other workflow changes here.  That is, it should not be assumed that moving to
 GitHub implies using GitHub's issue tracking, or using the GitHub UI for
 pull-requests and/or code-review.
@@ -77,10 +72,10 @@ collaboration.
   TODO: "'multiple' LLVM developers" should be strengthened.  Do we have any
   evidence for 'most'?  Rewritten using what data we do have, but as-is is not
   as strong as can be, I think.  I don't know if this is important -- depends
-  on how much resistance there is to git vs svn.
+  on how much resistance there is to Git vs SVN.
 
 Git is also the version control many (most?) LLVM developers use. Despite the
-sources being stored in a SVN server, these developers are already using git
+sources being stored in a SVN server, these developers are already using Git
 through the Git-SVN integration.
 
 Git allows you to:
@@ -88,7 +83,7 @@ Git allows you to:
 * Commit, squash, merge, and fork locally without touching the remote server.
 * Maintain as many local branches as you like, letting you maintain multiple
   threads of development.
-* Collaborate on these branches (e.g. through your own fork of llvm on github).
+* Collaborate on these branches (e.g. through your own fork of llvm on GitHub).
 * Inspect the repository history (blame, log, bisect) without Internet access.
 
 In addition, because Git seems to be replacing most OSS projects' version
@@ -128,10 +123,10 @@ all LLVM subprojects.
 
 Git does not use sequential integer revision number but instead uses a hash to
 identify each commit. (Linus mentioned that the lack of such revision number
-is "the only real design mistake" in git [TorvaldRevNum]_.)
+is "the only real design mistake" in Git [TorvaldRevNum]_.)
 
 The loss of a sequential integer revision number has been a sticking point in
-past discussions about git:
+past discussions about Git:
 
 - "The 'branch' I most care about is mainline, and losing the ability to say
   'fixed in r1234' (with some sort of monotonically increasing number) would
@@ -144,7 +139,7 @@ past discussions about git:
   non-trivial issue." [JSonnRevNum]_
 - "Sequential IDs are important for LNT and llvmlab bisection tool." [MatthewsRevNum]_.
 
-However, git can emulate this increasing revision number:
+However, Git can emulate this increasing revision number:
 `git rev-list  --count <commit-hash>`. This identifier is unique only within a
 single branch, but this means the tuple `(num, branch-name)` uniquely identifies
 a commit.
@@ -152,7 +147,7 @@ a commit.
 We can thus use this revision number to ensure that e.g. `clang -v` reports a
 user-friendly revision number (e.g. `master-12345` or `4.0-5321`). This should
 be enough to address the objections raised above with respect to this aspect of
-git.
+Git.
 
 What About Branches and Merges?
 -------------------------------
@@ -160,8 +155,8 @@ What About Branches and Merges?
 In contrast to SVN, Git makes branching easy. Git's commit history is represented
 as a DAG, a departure from SVN's linear history.
 
-However, we propose to *enforce linear history* in our canonical git repository
-repository.  (This is not uncommon amongst many large users of git.)
+However, we propose to *enforce linear history* in our canonical Git repository
+repository.  (This is not uncommon amongst many large users of Git.)
 
 ..
   TODO: Is this going to work when people push via the SVN bridge?
@@ -185,13 +180,13 @@ being changing the URL from `http://llvm.org/viewvc/...` to
 One or Multiple Repositories?
 =============================
 
-There are two major proposals for how to structure our git repository: The
+There are two major proposals for how to structure our Git repository: The
 "multirepo" and the "monorepo".
 
-1. *Multirepo* - Moving each SVN sub-project into its own separate git repository.
-2. *Monorepo* - Moving all the LLVM sub-projects into a single git repository.
+1. *Multirepo* - Moving each SVN sub-project into its own separate Git repository.
+2. *Monorepo* - Moving all the LLVM sub-projects into a single Git repository.
 
-The first proposal would mimic the existing official separate read-only git
+The first proposal would mimic the existing official separate read-only Git
 repositories (e.g. http://llvm.org/git/compiler-rt.git), while the second one
 would mimic an export of the SVN repository (i.e. it would look similar to
 https://github.com/llvm-project/llvm-project, where each sub-project has its own
@@ -219,7 +214,7 @@ much more complicated, and might end up loosing history.
 
 Some concerns have been raised that having a single repository would be a burden
 for downstream users that have interest in only a single repository, however
-this is addressed by keeping a read-only git repo for each project just as we
+this is addressed by keeping a read-only Git repo for each project just as we
 do today. Also the GitHub SVN bridge allows to contribute to a single
 sub-project the same way it is possible today (see below before/after section
 for more details).
@@ -243,7 +238,7 @@ across all projects.
 Under the multirepo, things are more involved.  We describe here the proposed
 solution.
 
-Fundamentally, separated git repositories imply that a tuple of revisions
+Fundamentally, separated Git repositories imply that a tuple of revisions
 (one entry per repository) is needed to describe the state across
 repositories/sub-projects.
 For example, a given version of clang would be
@@ -255,7 +250,7 @@ the sequence (with some granularity) in which commits were added across
 repository and to provide a single revision number.
 
 This umbrella repository will be read-only and periodically updated
-to record the above tuple. The proposed form to record this is to use git
+to record the above tuple. The proposed form to record this is to use Git
 [submodules]_, possibly along with a set of scripts to help check out a
 specific revision of the LLVM distribution.
 
@@ -285,7 +280,7 @@ Checkout/Clone a Single Project, without Commit Access
 Except the URL, nothing changes. The possibilities today are::
 
   svn co http://llvm.org/svn/llvm-project/llvm/trunk llvm
-  # or with git
+  # or with Git
   git clone http://llvm.org/git/llvm.git
 
 After the move to GitHub, you would do either::
@@ -305,7 +300,7 @@ Checkout/Clone a Single Project, with Commit Access
 
   # direct SVN checkout
   svn co https://user@llvm.org/svn/llvm-project/llvm/trunk llvm
-  # or using the read-only git view, with git-svn
+  # or using the read-only Git view, with git-svn
   git clone http://llvm.org/git/llvm.git
   cd llvm
   git svn init https://llvm.org/svn/llvm-project/llvm/trunk --username=<username>
@@ -343,7 +338,7 @@ read the history for a single project (`git log libcxx` for example).
 If you don't want to have the sources for all the sub-projects checked out for,
 there are again a few options.
 
-First, you could hide the other directories using a git sparse checkout::
+First, you could hide the other directories using a Git sparse checkout::
 
   git config core.sparseCheckout true
   echo /compiler-rt > .git/info/sparse-checkout
@@ -379,7 +374,7 @@ in the same way as it would do today.
 
 Finally, you could use *git-svn* and one of the subproject mirrors::
 
-  # Clone from the single read-only git repo
+  # Clone from the single read-only Git repo
   git clone http://llvm.org/git/llvm.git
   cd llvm
   # Configure the SVN remote and initialize the svn metadata
@@ -462,7 +457,7 @@ Commit an API Change in LLVM and Update the Sub-projects
 --------------------------------------------------------
 
 Today this is easy for subversion users, and possible but very complicated for
-git-svn users.  Most git users don't try to e.g. update LLD or Clang in the
+git-svn users.  Most Git users don't try to e.g. update LLD or Clang in the
 same commit as they change an LLVM API.
 
 The multirepo proposal does not address this: one would have to commit and push
@@ -508,12 +503,12 @@ To switch branches::
 
 **Multirepo Proposal**
 
-The multirepo works the same as the current git workflow: every command needs
+The multirepo works the same as the current Git workflow: every command needs
 to be applied to each of the individual repositories.
 
 **Monorepo Proposal**
 
-Regular git commands are sufficient, because everything is in a single
+Regular Git commands are sufficient, because everything is in a single
 repository:
 
 To update the repository to tip of trunk::
@@ -535,8 +530,8 @@ Assuming a developer is looking for a bug in clang (or lld, or lldb, ...).
 
 **Currently**
 
-SVN does not have builtin bisection support. Using the existing git read-only
-view of the repositories, it is possible to use the native git bisection script
+SVN does not have builtin bisection support. Using the existing Git read-only
+view of the repositories, it is possible to use the native Git bisection script
 over the llvm repository, and use some scripting to synchronize the clang
 repository to match the llvm revision.
 
@@ -587,11 +582,11 @@ Under either the multirepo or the monorepo, downstream projects can continue
 working pretty much the same as they currently do, under either the monorepo or
 multirepo proposal.
 
-* If you were pulling from the SVN repo before the switch to git, you can
+* If you were pulling from the SVN repo before the switch to Git, you can
   continue to use SVN. The main caveat is that you'll need to be prepared for a
   one-time change to the revision numbers.
 
-* If you were pulling from one of the existing git repos, this also will
+* If you were pulling from one of the existing Git repos, this also will
   continue to work as before.
 
 Under the monorepo proposal, you have a third option: migrating your fork to
@@ -635,7 +630,7 @@ monorepo that contains everything:
   toolchain present in one repository.
 
 * Developers who hack only on one of these subprojects can continue to use the
-  single subproject git mirrors, so their workflow is unchanged.  (That is,
+  single subproject Git mirrors, so their workflow is unchanged.  (That is,
   they aren't forced to download or check out all of llvm, clang, etc. just to
   make a change to libcxx.)
 
@@ -667,7 +662,7 @@ STEP #1 : Before The Move
    repository.
 3. Add the required bots to implement the commit emails, as well as the
    umbrella repository update (if the multirepo is selected) or the read-only
-   git views for the sub-projects (if the monorepo is selected).
+   Git views for the sub-projects (if the monorepo is selected).
 
 STEP #2 : Git Move
 
